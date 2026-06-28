@@ -1,19 +1,21 @@
 import sqlite3
+import os
+
 
 class GuardDB:
-    def __init__(self, 
-                 db_path="data/guards_system.db"):
+    def __init__(self, db_path="data/guards_system.db"):
         self.conn = sqlite3.connect(db_path)
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.setup_tables()
-        
+
         # Seeding default guards list on first start up
         self.seed_default_guards()
-        
+
     def seed_default_guards(self):
         cursor = self.conn.cursor()
         # Count how many guards are currently in the DB
         cursor.execute("SELECT COUNT(*) FROM guards")
-        
+
         # If the count = 0, seed master list
         if cursor.fetchone()[0] == 0:
             # Default guards list
@@ -55,58 +57,58 @@ class GuardDB:
                 "איזבל פריאטל",
                 "נעמי רחבייב",
                 "רועי רביב",
-                "שחר שמש" 
+                "שחר שמש",
             ]
-            
+
             for name in master_list:
                 self.add_guard(name)
-        
+
     def setup_tables(self):
         cursor = self.conn.cursor()
-        
+
         # Creating the table for the names
-        cursor.execute('''
+        cursor.execute("""
                        CREATE TABLE IF NOT EXISTS guards (
                             id INTEGER PRIMARY KEY,
                             name TEXT UNIQUE NOT NULL
                             )
-                       ''')
-        
+                       """)
+
         # Creating the history table
-        cursor.execute('''
+        cursor.execute("""
                        CREATE TABLE IF NOT EXISTS history (
                             id INTEGER PRIMARY KEY,
                             guard_name TEXT,
                             post_name TEXT,
                             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                             )
-                       ''')
-        
+                       """)
+
         self.conn.commit()
-     
-    # Adding guards to the DB    
+
+    # Adding guards to the DB
     def add_guard(self, name):
         cursor = self.conn.cursor()
         try:
-            cursor.execute("INSERT INTO guards (name) VALUES (?)", (name, ))
+            cursor.execute("INSERT INTO guards (name) VALUES (?)", (name,))
             self.conn.commit()
             print(f"Success: Added {name} to the database.")
-                
+
         except sqlite3.IntegrityError:
             print(f"Notice: {name} is already in database!")
-            
-    # Deleting guards from the DB        
+
+    # Deleting guards from the DB
     def remove_guard(self, name):
         cursor = self.conn.cursor()
         cursor.execute("DELETE FROM guards WHERE name = ?", (name,))
         self.conn.commit()
-            
+
     def get_next_guard(self, present_guard_names, post_name):
         cursor = self.conn.cursor()
-        
+
         # Adds the correct amount of place holders for the number of guards in the shift
-        placeholders = ','.join(['?'] * len(present_guard_names))
-        
+        placeholders = ",".join(["?"] * len(present_guard_names))
+
         # Query to get the last time a guard was on post
         query = f"""
             SELECT g.name, MAX(h.timestamp) as last_done
@@ -119,45 +121,62 @@ class GuardDB:
         """
         params = [post_name] + present_guard_names
         cursor.execute(query, params)
-        
+
         result = cursor.fetchone()
-        
+
         if result:
-            return result[0] # Returns the selected guard
+            return result[0]  # Returns the selected guard
         return None
-    
+
     def record_shift(self, guard_name, post_name):
         cursor = self.conn.cursor()
-        
-        cursor.execute("""
+
+        cursor.execute(
+            """
             INSERT INTO history (guard_name, post_name) 
             VALUES (?, ?)
-        """, (guard_name, post_name))
-        
+        """,
+            (guard_name, post_name),
+        )
+
         self.conn.commit()
-        
+
+    def clear_history(self):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM history")
+        self.conn.commit()
+
     def get_all(self):
         cursor = self.conn.cursor()
         cursor.execute("SELECT name FROM guards")
-        
+
         return [row[0] for row in cursor.fetchall()]
-        
-                
- # -- Test --
+
+    def get_shift_history(self):
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            SELECT guard_name, post_name, datetime(timestamp, 'localtime')
+            FROM history
+            ORDER BY timestamp DESC
+            LIMIT 50
+        """)
+        return cursor.fetchall()
+
+
+# -- Test --
 if __name__ == "__main__":
     db = GuardDB()
-                
+
     db.add_guard("קיריל שמיס")
     db.add_guard("אדם שמאילוב")
-                           
-            
-     # 2. Let's pretend Adam did the scanning post right now
+
+    # 2. Let's pretend Adam did the scanning post right now
     db.record_shift("אדם שמאילוב", "סריקה")
     print("Recorded a scanning shift for Adam.")
-    
+
     # 3. Now let's ask the database who should do the NEXT scan
     today_team = ["קיריל שמיס", "אדם שמאילוב"]
     next_up = db.get_next_guard(today_team, "סריקה")
-    
-    print(f"The next person for סריקה is: {next_up}")           
-                
+
+    print(f"The next person for סריקה is: {next_up}")
