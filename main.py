@@ -7,7 +7,7 @@ from PyQt6.QtGui import QIcon
 
 
 def get_asset_path(relative_path):
-    """Dynamically route paths for PyInstaller _MEIPASS or local dev"""
+
     if hasattr(sys, "_MEIPASS"):
 
         return os.path.join(sys._MEIPASS, relative_path)

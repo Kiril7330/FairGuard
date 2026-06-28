@@ -113,8 +113,8 @@ class MainWindow(QMainWindow):
         # Logo
         logo_path = get_asset_path("assets/guard_logo.jpg")
         self.setWindowIcon(QIcon(logo_path))
-        
-        self.setMinimumSize(500, 400
+
+        self.setMinimumSize(500, 400)
 
         # Connecting the database
         self.db = GuardDB()
