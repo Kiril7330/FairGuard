@@ -200,6 +200,7 @@ class MainWindow(QMainWindow):
             padding: 6px;
             font-weight: bold;
         """)
+        self.assign_btn.clicked.connect(self.assign_shift)
 
         # Remove a guard from the shift
         self.remove_from_shift_btn = QPushButton("הסר מהמשמרת")
@@ -361,3 +362,10 @@ class MainWindow(QMainWindow):
         if next_guard:
             self.result_label.setText(f"הבא בתור ל{post_name}: {next_guard}")
             self.db.record_shift(next_guard, post_name)
+
+        else:
+            fallback_guard = present_guards[0]
+            self.result_label.setText(
+                f"הבא בתור ל{post_name}: {fallback_guard} (שיבוץ ראשון)"
+            )
+            self.db.record_shift(fallback_guard, post_name)
