@@ -28,15 +28,29 @@ class MainWindow(QMainWindow):
         
         # Add guard to the DB button
         self.add_to_db_btn = QPushButton("הוסף מאבטח/ת למאגר")
-        self.add_to_db_btn.setStyleSheet("background-color: #d4edda; color: green;") 
+        self.add_to_db_btn.setStyleSheet("""
+            background-color: #d4edda; 
+            color: green; 
+            border-radius: 8px; 
+            border: 1px solid #c3e6cb;
+            padding: 6px;
+            font-weight: bold;
+        """) 
         
         # Delete guard from the DB button 
         self.remove_from_db_btn = QPushButton("מחק מאבטח/ת מהמאגר")
         self.remove_from_db_btn.setStyleSheet("background-color: #f8d7da; color: red;") 
         
         # Add/Delete button logic 
-        self.add_to_db_btn.clicked.connect(self.hire_guard)
-        self.remove_from_db_btn.clicked.connect(self.fire_guard)
+        self.remove_from_db_btn = QPushButton("מחק מאבטח/ת מהמאגר")
+        self.remove_from_db_btn.setStyleSheet("""
+            background-color: #f8d7da; 
+            color: red; 
+            border-radius: 8px; 
+            border: 1px solid #f5c6cb;
+            padding: 6px;
+            font-weight: bold;
+        """)
         
         db_management_layout.addWidget(self.add_to_db_btn)
         db_management_layout.addWidget(self.remove_from_db_btn)
@@ -46,7 +60,7 @@ class MainWindow(QMainWindow):
         search_layout = QHBoxLayout()
         
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("שבץ מאבטח/ת")
+        self.search_bar.setPlaceholderText("הקלד שם מאבטח/ת")
         self.refresh_autocomplete()
         self.add_guard_btn = QPushButton("שבץ למשמרת")
         
@@ -77,6 +91,14 @@ class MainWindow(QMainWindow):
         self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.result_label.setStyleSheet("font-size: 18px; font-weight: bold; color: blue;")
         main_layout.addWidget(self.result_label)
+        
+        self.central_widget.setLayout(main_layout)
+        self.setCentralWidget(self.central_widget)
+        
+        self.signature_label = QLabel("Made by Kiril Shamis")
+        self.signature_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.signature_label.setStyleSheet("font-size: 11px; color: gray; font-style: italic;")
+        main_layout.addWidget(self.signature_label)
         
         self.central_widget.setLayout(main_layout)
         self.setCentralWidget(self.central_widget)
@@ -112,7 +134,7 @@ class MainWindow(QMainWindow):
         if not typed_name:
             return
             
-        # 1Pull master list names
+        # Pull master list names
         all_guards = self.db.get_all() 
         
         # Setting the chosen guards name

@@ -6,6 +6,61 @@ class GuardDB:
         self.conn = sqlite3.connect(db_path)
         self.setup_tables()
         
+        # Seeding default guards list on first start up
+        self.seed_default_guards()
+        
+    def seed_default_guards(self):
+        cursor = self.conn.cursor()
+        # Count how many guards are currently in the DB
+        cursor.execute("SELECT COUNT(*) FROM guards")
+        
+        # If the count = 0, seed master list
+        if cursor.fetchone()[0] == 0:
+            # Default guards list
+            master_list = [
+                "אביב אברהמס",
+                "מנור אוחיון",
+                "יהונתן אזולאי",
+                "שון אלביליה",
+                "אריאל אליאס",
+                "הראל אלפסי",
+                "אייסל אלייב",
+                "גלעד ארטן",
+                "שרולי באקמן",
+                "אליה בראשי",
+                "נדב ברוש",
+                "ידידיה גוטליב",
+                "נסטיה גולדין",
+                "אשלי דהאן",
+                "סלמאן הינו",
+                "יקיר וולנברג",
+                "ניקול ויניקוב",
+                "הדר זיו",
+                "נתנאל זמיר",
+                "סנד חמדאן",
+                "זמנהי טגנה",
+                "עמית טל",
+                "יאיר ישראלי",
+                "שיקו כהן",
+                "עדי כהן",
+                "נועה כוכבי",
+                "שי לייבא",
+                "תמיר מרדר",
+                "אילון סבגי",
+                "דניאל סיאר",
+                "יוסף עווידה",
+                "אלעד עמידור",
+                "אלונה פופוב",
+                "ליאור פינטו",
+                "איזבל פריאטל",
+                "נעמי רחבייב",
+                "רועי רביב",
+                "שחר שמש" 
+            ]
+            
+            for name in master_list:
+                self.add_guard(name)
+        
     def setup_tables(self):
         cursor = self.conn.cursor()
         
