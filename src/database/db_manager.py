@@ -28,7 +28,8 @@ class GuardDB:
                        ''')
         
         self.conn.commit()
-        
+     
+    # Adding guards to the DB    
     def add_guard(self, name):
         cursor = self.conn.cursor()
         try:
@@ -38,6 +39,12 @@ class GuardDB:
                 
         except sqlite3.IntegrityError:
             print(f"Notice: {name} is already in database!")
+            
+    # Deleting guards from the DB        
+    def remove_guard(self, name):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM guards WHERE name = ?", (name,))
+        self.conn.commit()
             
     def get_next_guard(self, present_guard_names, post_name):
         cursor = self.conn.cursor()
