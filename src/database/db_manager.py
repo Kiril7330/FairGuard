@@ -1,14 +1,26 @@
 import sqlite3
 import os
+import sys
 
 
 class GuardDB:
-    def __init__(self, db_path="data/guards_system.db"):
+    def __init__(self):
+        if getattr(sys, "frozen", False):
+            base_dir = os.path.dirname(sys.executable)
+        else:
+            base_dir = os.path.abspath(".")
+
+        data_folder = os.path.join(base_dir, "data")
+
+        if not os.path.exists(data_folder):
+            os.makedirs(data_folder)
+
+        db_path = os.path.join(data_folder, "guards_system.db")
         self.conn = sqlite3.connect(db_path)
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
         self.setup_tables()
 
-        # Seeding default guards list on first start up
+        # 6. Seed default guards list on first start up
         self.seed_default_guards()
 
     def seed_default_guards(self):
