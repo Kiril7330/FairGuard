@@ -19,6 +19,15 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QCompleter
 from src.database.db_manager import GuardDB
+import os
+import sys
+
+
+def get_asset_path(relative_path):
+    """Dynamically route paths for PyInstaller _MEIPASS or local dev"""
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 class HistoryWindow(QDialog):
@@ -102,8 +111,10 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(500, 400)
 
         # Logo
-        self.setWindowIcon(QIcon("assets/guard_logo.jpg"))
-        self.setMinimumSize(500, 400)
+        logo_path = get_asset_path("assets/guard_logo.jpg")
+        self.setWindowIcon(QIcon(logo_path))
+        
+        self.setMinimumSize(500, 400
 
         # Connecting the database
         self.db = GuardDB()
