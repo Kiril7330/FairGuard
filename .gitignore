@@ -1,3 +1,19 @@
+# Environments
 venv/
-data/*.db
+env/
+
+# Python Cache
 __pycache__/
+*.pyc
+
+# PyInstaller Build Files
+build/
+dist/
+*.spec
+
+# Database
+data/
+
+# OS/Editor Files
+.DS_Store
+.vscode/
