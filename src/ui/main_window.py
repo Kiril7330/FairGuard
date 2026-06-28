@@ -24,18 +24,32 @@ class MainWindow(QMainWindow):
         self.central_widget = QWidget()
         main_layout = QVBoxLayout()
         
+        db_management_layout = QHBoxLayout()
+        
+        # Add guard to the DB button
+        self.add_to_db_btn = QPushButton("הוסף מאבטח/ת למאגר")
+        self.add_to_db_btn.setStyleSheet("background-color: #d4edda; color: green;") 
+        
+        # Delete guard from the DB button 
+        self.remove_from_db_btn = QPushButton("מחק מאבטח/ת מהמאגר")
+        self.remove_from_db_btn.setStyleSheet("background-color: #f8d7da; color: red;") 
+        
+        # Add/Delete button logic 
+        self.add_to_db_btn.clicked.connect(self.hire_guard)
+        self.remove_from_db_btn.clicked.connect(self.fire_guard)
+        
+        db_management_layout.addWidget(self.add_to_db_btn)
+        db_management_layout.addWidget(self.remove_from_db_btn)
+        main_layout.addLayout(db_management_layout)
+        
         # Search bar and Auto complete
         search_layout = QHBoxLayout()
         
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("שבץ מאבטח/ת")
+        self.refresh_autocomplete()
+        self.add_guard_btn = QPushButton("שבץ למשמרת")
         
-        # Get all the guards from DB
-        all_guards = self.db.get_all()
-        completer = QCompleter(all_guards)
-        
-        self.search_bar.setCompleter(completer)
-        self.add_guard_btn = QPushButton("הוסף")
         self.search_bar.returnPressed.connect(self.add_guard_to_list)
         self.add_guard_btn.clicked.connect(self.add_guard_to_list)
         
@@ -67,7 +81,29 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(main_layout)
         self.setCentralWidget(self.central_widget)
         
+    def refresh_autocomplete(self):
+        all_guards = self.db.get_all()
+        completer = QCompleter(all_guards)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.search_bar.setCompleter(completer)
         
+    def hire_guard(self):
+            
+        name = self.search_bar.text().strip()
+        if name:
+            self.db.add_guard(name) 
+            self.refresh_autocomplete() 
+            self.result_label.setText(f"'{name}' נוסף/ה למאגר!")
+            self.search_bar.clear()
+            
+    def fire_guard(self):
+        name = self.search_bar.text().strip()
+        if name:
+            self.db.remove_guard(name) 
+            self.refresh_autocomplete() 
+            self.result_label.setText(f"הצלחה: '{name}' נמחק/ה מהמאגר!")
+            self.search_bar.clear()
+
     
     def add_guard_to_list(self):
         typed_name = self.search_bar.text().strip()
