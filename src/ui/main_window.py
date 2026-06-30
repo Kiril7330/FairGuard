@@ -20,9 +20,12 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QCompleter
 from src.database.db_manager import GuardDB
+import csv
+from PyQt6.QtWidgets import QFileDialog
 
 
 class HistoryWindow(QDialog):
+
     def __init__(self, db_manager, is_dark_mode, parent=None):
         super().__init__(parent)
         self.setWindowTitle("היסטוריית שיבוצים (50 אחרונים)")
@@ -75,6 +78,22 @@ class HistoryWindow(QDialog):
             font-weight: bold;
         """)
         self.clear_btn.clicked.connect(self.clear_history_safely)
+        self.export_btn = QPushButton("ייצא לאקסל")
+        self.export_btn.setStyleSheet("""
+            background-color: #d4edda; 
+            color: green; 
+            border-radius: 8px; 
+            border: 1px solid #c3e6cb;
+            padding: 6px;
+            font-weight: bold;
+        """)
+        self.export_btn.clicked.connect(self.export_to_excel)
+
+        # Excel export button
+
+        btn_layout.addWidget(self.export_btn)
+        btn_layout.addWidget(self.del_selected_btn)
+        btn_layout.addWidget(self.clear_btn)
 
         btn_layout.addWidget(self.del_selected_btn)
         btn_layout.addWidget(self.clear_btn)
@@ -116,6 +135,10 @@ class HistoryWindow(QDialog):
         if reply == QMessageBox.StandardButton.Yes:
             self.db.delete_specific_history(name, post, timestamp)
             self.load_table_data()
+            
+            
+            
+            
 
     def clear_history_safely(self):
         reply = QMessageBox.question(
@@ -149,6 +172,39 @@ class HistoryWindow(QDialog):
                 QTableWidget { background-color: #ffffff; color: #000000; gridline-color: #cccccc; }
                 QHeaderView::section { background-color: #e0e0e0; color: black; border: 1px solid #cccccc; }
             """)
+
+    def export_to_excel(self):
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "שמור קובץ אקסל", "FairGuards_History.csv", "CSV Files (*.csv)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            history_data = self.db.get_shift_history()
+            with open(file_path, mode="w", newline="", encoding="utf-8-sig") as file:
+                writer = csv.writer(file)
+
+                # Write the header row
+                writer.writerow(["שם מאבטח/ת", "עמדה", "זמן שיבוץ"])
+
+                # Write all the data rows
+                writer.writerows(history_data)
+
+            msg = QMessageBox(self)
+            msg.setWindowTitle("הצלחה")
+            msg.setText("היסטוריית השיבוצים יוצאה לאקסל בהצלחה! ✅")
+            msg.setIcon(QMessageBox.Icon.NoIcon)
+            msg.exec()
+
+        except Exception as e:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("שגיאה")
+            msg.setText(f"אירעה שגיאה בייצוא הקובץ:\n{str(e)}")
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.exec()
 
 
 class MainWindow(QMainWindow):

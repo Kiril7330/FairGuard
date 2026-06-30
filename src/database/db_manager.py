@@ -189,6 +189,19 @@ class GuardDB:
 
         self.conn.commit()
 
+    def get_shift_statistics(self):
+        """Mathematically groups and counts total shifts per guard."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT guard_name, COUNT(*) as total_shifts 
+            FROM history 
+            GROUP BY guard_name 
+            ORDER BY total_shifts DESC
+        """)
+        return cursor.fetchall()
+    
+    
+
 
 # -- Test --
 if __name__ == "__main__":
