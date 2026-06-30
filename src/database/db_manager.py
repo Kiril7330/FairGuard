@@ -175,6 +175,20 @@ class GuardDB:
         """)
         return cursor.fetchall()
 
+    def delete_specific_history(self, guard_name, post_name, timestamp):
+        """Deletes a single, specific shift record from the history."""
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            DELETE FROM history 
+            WHERE guard_name = ? AND post_name = ? AND datetime(timestamp, 'localtime') = ?
+        """,
+            (guard_name, post_name, timestamp),
+        )
+
+        self.conn.commit()
+
 
 # -- Test --
 if __name__ == "__main__":
